@@ -1,11 +1,10 @@
 module github.com/jum/certwatch
 
-go 1.20
+go 1.21
 
 require (
 	github.com/cespare/reflex v0.3.1
 	github.com/redis/go-redis/v9 v9.0.5
-	golang.org/x/exp v0.0.0-20230810033253-352e893a4cad
 )
 
 require (

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"io/fs"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"golang.org/x/exp/slog"
 )
 
 type Config struct {
@@ -81,6 +81,7 @@ func main() {
 	}
 	if needExec {
 		if len(config.Cmd) > 0 {
+			slog.Info("exec", "cmd", config.Cmd)
 			cmd := exec.Command("sh", "-c", config.Cmd)
 			outerr, err := cmd.CombinedOutput()
 			if err != nil {
@@ -129,6 +130,7 @@ func main() {
 		}
 		if needExec {
 			if len(config.Cmd) > 0 {
+				slog.Info("exec", "cmd", config.Cmd)
 				cmd := exec.Command("sh", "-c", config.Cmd)
 				outerr, err := cmd.CombinedOutput()
 				if err != nil {
