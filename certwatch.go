@@ -22,10 +22,11 @@ type Config struct {
 	ValuePrefix string
 	AcmeDirName string
 
-	CertDir string
-	Certs   []string
-	Cmd     string
-	Debug   bool
+	CertDir   string
+	Certs     []string
+	Cmd       string
+	Debug     bool
+	SleepTime time.Duration
 }
 
 var (
@@ -41,6 +42,7 @@ func main() {
 	flag.StringVar(&config.CertDir, "certdir", "/var/lib/certwatch", "directory for storing certificates locally")
 	flag.StringVar(&config.Cmd, "cmd", "", "command to execute if certificates have been changed")
 	flag.BoolVar(&config.Debug, "debug", false, "verbose debug output")
+	flag.DurationVar(&config.SleepTime, "sleep", 10*time.Second, "sleep duration after error")
 	flag.Parse()
 	config.Certs = flag.Args()
 	level := new(slog.LevelVar) // Info by default
@@ -68,12 +70,23 @@ func main() {
 	}
 	client = redis.NewClient(opt)
 	ctx := context.Background()
+	for {
+		slog.Info("listening for cert changes")
+		err = listenRedis(ctx)
+		if err != nil {
+			slog.Error("listenRedis", "err", err)
+		}
+		slog.Info("sleep after redis error", "dur", config.SleepTime)
+		time.Sleep(config.SleepTime)
+	}
+}
+
+func listenRedis(ctx context.Context) error {
 	needExec := false
 	for _, i := range config.Certs {
 		didOne, err := handleCert(ctx, i)
 		if err != nil {
-			slog.Error("handleCert", "err", err)
-			os.Exit(1)
+			return err
 		}
 		if didOne {
 			needExec = true
@@ -95,8 +108,7 @@ func main() {
 	for {
 		msg, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {
-			slog.Error("ReceiveMessage", "err", err)
-			os.Exit(1)
+			return err
 		}
 		needExec := false
 		key := strings.TrimPrefix(msg.Channel, keypath)
