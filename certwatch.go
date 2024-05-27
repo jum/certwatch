@@ -36,7 +36,7 @@ var (
 
 func main() {
 	flag.StringVar(&config.RedisUrl, "redisurl", "", "URL for redis instance")
-	flag.StringVar(&config.KeyPrefix, "keyprefix", "caddytls", "prefix for keys")
+	flag.StringVar(&config.KeyPrefix, "keyprefix", "caddy", "prefix for keys")
 	flag.StringVar(&config.ValuePrefix, "valueprefix", "caddy-storage-redis", "prefix for values")
 	flag.StringVar(&config.AcmeDirName, "acmedir", "acme-v02.api.letsencrypt.org-directory", "subdir for ACME")
 	flag.StringVar(&config.CertDir, "certdir", "/var/lib/certwatch", "directory for storing certificates locally")
