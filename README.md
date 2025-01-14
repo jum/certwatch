@@ -6,7 +6,7 @@ to install:
 
 ```
 $ go build
-$ install -c certwatch /usr/local/bin
+$ install -c certwatch /usr/local/sbin
 ```
 
 Use a certwatch.service like this, replace your domains, services and redis url accordingly:
@@ -16,7 +16,7 @@ Use a certwatch.service like this, replace your domains, services and redis url 
 Description=Watch for cert changes and restart services
 
 [Service]
-ExecStart=/usr/local/bin/certwatch -debug -redisurl redis://redis.tailXXXXX.ts.net -cmd="systemctl restart postfix dovecot coturn" mail.example.org imap.example.org turn.example.org
+ExecStart=/usr/local/sbin/certwatch -debug -redisurl redis://redis.tailXXXXX.ts.net -cmd="systemctl restart postfix dovecot coturn" mail.example.org imap.example.org turn.example.org
 
 [Install]
 WantedBy=multi-user.target
