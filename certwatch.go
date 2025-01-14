@@ -175,7 +175,7 @@ func handleCert(ctx context.Context, cert string) (bool, error) {
 			return false, err
 		}
 		finfo, err := os.Stat(fname)
-		if err == nil && finfo.ModTime() == value.Modified && finfo.Size() == int64(len(value.Value)) {
+		if err == nil && finfo.ModTime().UTC() == value.Modified.UTC() && finfo.Size() == int64(len(value.Value)) {
 			continue
 		} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return false, err
