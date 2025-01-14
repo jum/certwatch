@@ -1,7 +1,6 @@
 name: goreleaser
 
 on:
-  pull_request:
   push:
     tags:
       - '*'
@@ -39,5 +38,5 @@ jobs:
           HOOK_OS_NAME: ${{ runner.os }}
           WORKFLOW_NAME: ${{ github.workflow }}
         run: |
-          git clone https://github.com/DiscordHooks/github-actions-discord-webhook.git webhook
+          git clone https://github.com/jum/github-actions-discord-webhook.git webhook
           bash webhook/send.sh $JOB_STATUS $WEBHOOK_URL
