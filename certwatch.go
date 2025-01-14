@@ -135,6 +135,8 @@ func listenRedis(ctx context.Context) error {
 					if didOne {
 						needExec = true
 					}
+				case "zadd":
+					// Ignore ZADD, used if the directory is updated.
 				default:
 					slog.Warn("unhandled message", "msg", msg)
 				}
