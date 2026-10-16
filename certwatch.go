@@ -95,7 +95,7 @@ func listenRedis(ctx context.Context) error {
 	if needExec {
 		if len(config.Cmd) > 0 {
 			slog.Info("exec", "cmd", config.Cmd)
-			cmd := exec.Command("sh", "-c", config.Cmd)
+			cmd := exec.Command("sh", "-c", config.Cmd) // #nosec G204 -- configured command
 			outerr, err := cmd.CombinedOutput()
 			if err != nil {
 				slog.Error("exec", "err", err, "outerr", string(outerr))
@@ -104,7 +104,9 @@ func listenRedis(ctx context.Context) error {
 	}
 	keypath := "__keyspace@0__:" + config.KeyPrefix + "/certificates/" + config.AcmeDirName + "/"
 	pubsub := client.PSubscribe(ctx, keypath+"*")
-	defer pubsub.Close()
+	defer func() {
+		_ = pubsub.Close()
+	}()
 	for {
 		msg, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {
@@ -145,7 +147,7 @@ func listenRedis(ctx context.Context) error {
 		if needExec {
 			if len(config.Cmd) > 0 {
 				slog.Info("exec", "cmd", config.Cmd)
-				cmd := exec.Command("sh", "-c", config.Cmd)
+				cmd := exec.Command("sh", "-c", config.Cmd) // #nosec G204 -- configured command
 				outerr, err := cmd.CombinedOutput()
 				if err != nil {
 					slog.Error("exec", "err", err, "outerr", string(outerr))
@@ -177,18 +179,21 @@ func handleCert(ctx context.Context, cert string) (bool, error) {
 			return false, err
 		}
 		finfo, err := os.Stat(fname)
-		if err == nil && finfo.ModTime().UTC() == value.Modified.UTC() && finfo.Size() == int64(len(value.Value)) {
+		if err == nil && finfo.ModTime().Equal(value.Modified) && finfo.Size() == int64(len(value.Value)) {
 			continue
 		} else if err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return false, err
 		}
-		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+		f, err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600) // #nosec G304 -- cert name is valis as file name
 		if err != nil {
 			return false, err
 		}
 		n, err := f.Write(value.Value)
 		if n != len(value.Value) {
-			f.Close()
+			err1 := f.Close()
+			if err1 != nil {
+				err = errors.Join(err, err1)
+			}
 			return false, err
 		}
 		err = f.Close()
